@@ -1,5 +1,7 @@
 # Google Calendar MCP Server
 
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-blue.svg)](https://github.com/daemonX10/Google-Calendar-MCP-Server)
+
 This is a Model Context Protocol (MCP) server that integrates with Google Calendar API, allowing AI assistants to manage calendars, create and update events, find available time slots, and more.
 
 ## Features
@@ -23,16 +25,39 @@ This is a Model Context Protocol (MCP) server that integrates with Google Calend
 
 ### Installation
 
+#### Option 1: Local Installation
+
 1. Clone this repository
+   ```bash
+   git clone https://github.com/daemonX10/Google-Calendar-MCP-Server.git
+   cd Google-Calendar-MCP-Server
+   ```
 2. Install dependencies:
    ```bash
    npm install
    ```
-3. Create a `.env` file with your Google API credentials:
+3. Create a `.env` file with your Google API credentials (you can copy from `.env.example`):
    ```
    GOOGLE_CLIENT_ID=your_client_id
    GOOGLE_CLIENT_SECRET=your_client_secret
    GOOGLE_REDIRECT_URI=http://localhost:3000/auth/callback
+   ```
+
+#### Option 2: Using Docker (Recommended)
+
+1. Clone this repository
+   ```bash
+   git clone https://github.com/daemonX10/Google-Calendar-MCP-Server.git
+   cd Google-Calendar-MCP-Server
+   ```
+2. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+3. Edit the `.env` file with your Google API credentials
+4. Build and start the Docker container:
+   ```bash
+   docker-compose up -d
    ```
 
 ### Google Cloud Setup
@@ -83,10 +108,12 @@ If you encounter authentication issues:
 ### Development Mode
 
 ```bash
-npx ts-node src/index.ts
+npm run dev
 ```
 
 ### Production Mode
+
+#### Option 1: Node.js
 
 1. Build the server:
    ```bash
@@ -96,6 +123,31 @@ npx ts-node src/index.ts
    ```bash
    npm start
    ```
+
+#### Option 2: Docker (Recommended)
+
+```bash
+# Build and start the container
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the container
+docker-compose down
+```
+
+## Docker Hub Image
+
+You can also use our pre-built Docker image:
+
+```bash
+# Pull the image
+docker pull daemonx10/google-calendar-mcp:latest
+
+# Run the container (create a .env file first)
+docker run -d -p 3000:3000 --name google-calendar-mcp --env-file ./.env daemonx10/google-calendar-mcp:latest
+```
 
 ## Integration with AI Assistants
 

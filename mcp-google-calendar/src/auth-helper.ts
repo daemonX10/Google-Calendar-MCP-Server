@@ -23,25 +23,45 @@ async function getRefreshToken() {
   }
 
   // Check required environment variables
-  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.GOOGLE_REDIRECT_URI) {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET; 
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+
+  if (!clientId || !clientSecret || !redirectUri) {
     console.error('Error: Missing required environment variables');
     console.error('Make sure GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI are set in your .env file');
+    console.error(`Current values:`);
+    console.error(`- GOOGLE_CLIENT_ID: ${clientId ? '✅ Set' : '❌ Missing'}`);
+    console.error(`- GOOGLE_CLIENT_SECRET: ${clientSecret ? '✅ Set' : '❌ Missing'}`);
+    console.error(`- GOOGLE_REDIRECT_URI: ${redirectUri || '❌ Missing'}`);
     process.exit(1);
   }
+
+  // Debugging info
+  console.log('Attempting to get refresh token with:');
+  console.log(`- Auth Code: ${authCode.substring(0, 5)}...`);
+  console.log(`- Redirect URI: ${redirectUri}`);
 
   try {
     // Create OAuth2 client
     const oauth2Client = new google.auth.OAuth2(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI
+      clientId,
+      clientSecret,
+      redirectUri
     );
 
     // Get tokens from authorization code
+    console.log('Exchanging auth code for tokens...');
     const { tokens } = await oauth2Client.getToken(authCode);
     
     if (!tokens.refresh_token) {
-      console.error('Error: No refresh token received. Try revoking access and authorizing again with prompt=consent');
+      console.error('Error: No refresh token received. This typically happens when:');
+      console.error('1. You\'ve previously authorized this application (tokens are only issued on first approval)');
+      console.error('2. The authorization didn\'t include the "prompt=consent" parameter');
+      console.error('\nTry these steps:');
+      console.error('1. Go to https://myaccount.google.com/permissions');
+      console.error('2. Revoke access for your app');
+      console.error('3. Restart the server and try authentication again');
       process.exit(1);
     }
 
@@ -82,6 +102,25 @@ async function getRefreshToken() {
     
   } catch (error) {
     console.error('Error getting refresh token:', error);
+    
+    // Provide more helpful error information
+    if (error.message && error.message.includes('invalid_grant')) {
+      console.error('\n❌ The authorization code is invalid or expired. Auth codes typically expire after a few minutes.');
+      console.error('\nTry these steps:');
+      console.error('1. Run the server again: npx ts-node src/index.ts');
+      console.error('2. Open the authentication URL in your browser');
+      console.error('3. Complete the authentication flow');
+      console.error('4. Immediately copy the new code and use it with this helper');
+      
+      // Check if redirect URI matches
+      if (redirectUri.includes('localhost')) {
+        console.error('\n⚠️ Redirect URI Tips:');
+        console.error('- Ensure your Google Cloud OAuth credentials have EXACTLY this redirect URI:');
+        console.error(`  ${redirectUri}`);
+        console.error('- The URI is case-sensitive and must match exactly');
+      }
+    }
+    
     process.exit(1);
   }
 }

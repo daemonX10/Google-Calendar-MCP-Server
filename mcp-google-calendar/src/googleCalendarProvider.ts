@@ -84,7 +84,8 @@ export class GoogleCalendarProvider {
         'https://www.googleapis.com/auth/calendar',
         'https://www.googleapis.com/auth/calendar.events',
       ],
-      prompt: 'consent',
+      prompt: 'consent', // Always show consent screen to ensure we get a refresh token
+      include_granted_scopes: true
     });
   }
 

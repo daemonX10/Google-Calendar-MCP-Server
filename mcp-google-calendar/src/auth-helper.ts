@@ -104,7 +104,13 @@ async function getRefreshToken() {
     console.error('Error getting refresh token:', error);
     
     // Provide more helpful error information
-    if (error.message && error.message.includes('invalid_grant')) {
+    if (
+      error && 
+      typeof error === 'object' && 
+      'message' in error && 
+      typeof error.message === 'string' && 
+      error.message.includes('invalid_grant')
+    ) {
       console.error('\n❌ The authorization code is invalid or expired. Auth codes typically expire after a few minutes.');
       console.error('\nTry these steps:');
       console.error('1. Run the server again: npx ts-node src/index.ts');

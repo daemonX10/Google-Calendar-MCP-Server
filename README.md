@@ -46,21 +46,47 @@ This is a Model Context Protocol (MCP) server that integrates with Google Calend
    - Select "Web application" as the application type
    - Add `http://localhost:3000/auth/callback` as an authorized redirect URI
    - Copy the Client ID and Client Secret to your `.env` file
+5. Set up the OAuth consent screen:
+   - Go to APIs & Services > OAuth consent screen
+   - Fill in the required information (app name, user support email, etc.)
+   - Add the necessary scopes (`https://www.googleapis.com/auth/calendar` and `https://www.googleapis.com/auth/calendar.events`)
+   - Add your email address as a test user
 
-## Usage
+## Authentication
 
 ### First-time Authentication
 
 1. Start the server:
    ```bash
-   npm run dev
+   npx ts-node src/index.ts
    ```
 2. You'll see a URL in the console output. Open this URL in your browser to authorize the application.
-3. After authorization, you'll get a code. Use this code with the `set_auth_code` tool.
-4. The server will log a refresh token. Add this token to your `.env` file as `GOOGLE_REFRESH_TOKEN`.
-5. Restart the server.
+3. After authorization, you'll be redirected to a URL with a code parameter. Copy this code.
+4. Use the authentication helper to save your refresh token:
+   ```bash
+   npx ts-node src/auth-helper.ts "YOUR_AUTH_CODE"
+   ```
+   This will automatically save the refresh token to your `.env` file and test the connection.
+5. You're now ready to use the MCP server!
 
-### Production Usage
+### Troubleshooting Authentication
+
+If you encounter authentication issues:
+
+1. Make sure your Google Cloud OAuth credentials are set up correctly with the exact redirect URI
+2. If you're getting "invalid_grant" errors, the authorization code has likely expired - they only last a few minutes
+3. If you've previously authorized the app, you might need to revoke access from [Google Account Permissions](https://myaccount.google.com/permissions) and try again
+4. Ensure you've added your email as a test user in the Google Cloud Console OAuth consent screen
+
+## Running the Server
+
+### Development Mode
+
+```bash
+npx ts-node src/index.ts
+```
+
+### Production Mode
 
 1. Build the server:
    ```bash
@@ -71,9 +97,43 @@ This is a Model Context Protocol (MCP) server that integrates with Google Calend
    npm start
    ```
 
-### Integration with Claude Desktop
+## Integration with AI Assistants
 
-Add this to your `claude_desktop_config.json` file:
+### VS Code Integration
+
+Add this to your VS Code settings.json:
+
+```json
+"mcp": {
+  "servers": {
+    "google-calendar": {
+      "command": "npx",
+      "args": ["ts-node", "/absolute/path/to/mcp-google-calendar/src/index.ts"]
+    }
+  }
+}
+```
+
+Replace `/absolute/path/to` with the absolute path to your project directory (e.g., `E:/test/mcp-google-calendar`).
+
+### Cursor Integration
+
+Add this to your Cursor settings.json:
+
+```json
+"mcp": {
+  "servers": {
+    "google-calendar": {
+      "command": "npx",
+      "args": ["ts-node", "/absolute/path/to/mcp-google-calendar/src/index.ts"]
+    }
+  }
+}
+```
+
+### Claude Desktop Integration
+
+Create or update your `claude_desktop_config.json` file (typically located in your user home directory):
 
 ```json
 {
@@ -81,7 +141,7 @@ Add this to your `claude_desktop_config.json` file:
     "servers": {
       "google-calendar": {
         "command": "node",
-        "args": ["/path/to/mcp-google-calendar/dist/index.js"],
+        "args": ["/absolute/path/to/mcp-google-calendar/dist/index.js"],
         "env": {
           "GOOGLE_CLIENT_ID": "your_client_id",
           "GOOGLE_CLIENT_SECRET": "your_client_secret",
@@ -93,6 +153,33 @@ Add this to your `claude_desktop_config.json` file:
   }
 }
 ```
+
+For Claude Desktop, you'll need to build the project first with `npm run build`.
+
+### Claude.ai Web Integration
+
+For Claude.ai web, you'll need to:
+
+1. Keep the server running locally on your machine 
+2. Use a solution like [Claude MCP Browser Extension](https://github.com/anthropics/claude-mcp-browser-extension) that connects Claude.ai to local MCP servers
+
+### Other AI Assistants
+
+For other AI assistants that support the Model Context Protocol:
+
+1. Keep the server running on port 3000
+2. Configure the assistant to connect to `http://localhost:3000` for the Google Calendar MCP server
+3. Consult your assistant's documentation for specific MCP integration steps
+
+## Using the MCP Server
+
+Once integrated with your AI assistant of choice, you can interact with your Google Calendar using natural language commands. For example:
+
+- "Show me my calendar for today"
+- "Create a meeting with John tomorrow at 2pm about project planning"
+- "Find available 30-minute slots in my calendar this week"
+- "Reschedule my 3pm meeting to 4pm"
+- "Cancel my meeting with Sarah"
 
 ## Available Tools
 
@@ -161,6 +248,36 @@ Get upcoming meetings for today or a specific day.
 Parameters:
 - `calendarId` (optional): Calendar ID (default: 'primary')
 - `date` (optional): Date in ISO format (default: today)
+
+## Security Considerations
+
+- This MCP server runs locally on your machine, so your calendar data never passes through external servers
+- OAuth refresh tokens are stored in your .env file - keep this secure
+- The server uses HTTPS when communicating with Google's APIs
+- Be careful when exposing this server to external networks
+
+## Troubleshooting
+
+### Server Won't Start
+
+- Check if Node.js is installed and up to date
+- Verify that all dependencies are installed with `npm install`
+- Make sure your .env file has the correct credentials
+- Check for TypeScript errors with `npx tsc --noEmit`
+
+### Authentication Issues
+
+- Ensure your Google Cloud OAuth credentials match what's in your .env file
+- Revoke app access from [Google Account Permissions](https://myaccount.google.com/permissions) and try again
+- Make sure your email is added as a test user in the Google Cloud Console
+- Check that your redirect URI exactly matches what's in the Google Cloud Console
+
+### Integration Issues
+
+- Verify that the paths in your configuration files are absolute and correct
+- Make sure the server is running before attempting to use it with an AI assistant
+- Check the assistant's logs for connection errors
+- For Claude Desktop, ensure you've built the project with `npm run build`
 
 ## License
 

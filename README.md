@@ -151,42 +151,6 @@ docker run -d -p 3000:3000 --name google-calendar-mcp --env-file ./.env daemonx1
 
 ## Integration with AI Assistants
 
-### VS Code Integration
-
-Add this to your VS Code settings.json:
-
-```json
-"mcp": {
-  "servers": {
-    "google-calendar": {
-      "command": "npx",
-      "args": ["ts-node", "/absolute/path/to/mcp-google-calendar/src/index.ts"]
-    }
-  }
-}
-```
-
-Replace `/absolute/path/to` with the absolute path to your project directory (e.g., `E:/test/mcp-google-calendar`).
-
-### Cursor Integration
-
-Add this to your Cursor settings.json:
-
-```json
-"mcp": {
-  "servers": {
-    "google-calendar": {
-      "command": "npx",
-      "args": ["ts-node", "/absolute/path/to/mcp-google-calendar/src/index.ts"]
-    }
-  }
-}
-```
-
-### Claude Desktop Integration
-
-Create or update your `claude_desktop_config.json` file (typically located in your user home directory):
-
 ```json
 {
   "mcp": {
